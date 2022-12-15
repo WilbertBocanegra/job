@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { App, Icons } from '$lib/components';
 	import { auth } from '$lib/services';
-	import { PUBLIC_ENPOINT } from '$env/static/public';
 	import { goto } from '$app/navigation';
 	import { user as storeUser } from '$lib/store';
 	let isOpen: boolean = false;
@@ -22,13 +21,16 @@
 		isOpen = true;
 		isLoading = true;
 		try {
-			const req = await fetch(PUBLIC_ENPOINT + 'auth', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(user)
-			});
+			const req = await fetch(
+				'https://bmdu7w25xpzewq36i22ooqpicm0nyclo.lambda-url.us-east-1.on.aws/auth',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(user)
+				}
+			);
 
 			const res = await req.json();
 			console.log(res);
