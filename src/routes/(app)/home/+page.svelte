@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { App, Icons } from '$lib/components';
+	import { user } from '$lib/store';
 </script>
 
 <App class="pl-60 bg-white">
@@ -46,7 +47,7 @@
 							<div
 								class="bg-indigo-700 h-8 w-8 rounded-full flex justify-center items-center shadow"
 							>
-								<h1 class="text-white">W</h1>
+								<h1 class="text-white">{$user?.name?.substring(0, 1) || ''}</h1>
 							</div>
 						</a>
 					</li>

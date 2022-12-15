@@ -1,0 +1,4 @@
+
+
+
+export { ajax } from './fetcher'

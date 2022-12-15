@@ -1,13 +1,110 @@
 <script lang="ts">
 	import { App, Icons } from '$lib/components';
-
+	import { auth } from '$lib/services';
+	import { PUBLIC_ENPOINT } from '$env/static/public';
 	import { goto } from '$app/navigation';
+	import { user as storeUser } from '$lib/store';
+	let isOpen: boolean = false;
+	let isError: boolean = false;
+	let isLoading: boolean = false;
 
-	const handleSubmit = (): void => {
-		goto('/home');
+	type User = {
+		email: string;
+		password: string;
+	};
+
+	let user = {
+		email: '',
+		password: ''
+	} satisfies User;
+
+	const handleSubmit = async (): Promise<void> => {
+		isOpen = true;
+		isLoading = true;
+		try {
+			const req = await fetch(PUBLIC_ENPOINT + 'auth', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(user)
+			});
+
+			const res = await req.json();
+			console.log(res);
+			if (res?.statusCode === 400 || res?.statusCode === 404) {
+				throw new Error(res.statusCode);
+			}
+			isOpen = false;
+			isLoading = false;
+			isError = false;
+			$storeUser = res.user;
+			goto('/home');
+		} catch (e) {
+			if (e instanceof Error) {
+				isOpen = true;
+				isLoading = false;
+				isError = true;
+			}
+		}
+
+		//goto('/home');
 	};
 </script>
 
+{#if isOpen}
+	<div class="fixed h-full w-full bg-black/25 z-[9999]   transition-all">
+		<div class="flex justify-center items-center bg-transparent w-full h-full">
+			<div class="bg-white border p-10 w-96 rounded shadow">
+				{#if isError}
+					<h1
+						class="text-center uppercase text-2xl font-mono font-extrabold tracking-widest text-red-500"
+					>
+						Error
+					</h1>
+					<h2 class="font-mono uppercase text-slate-500 text-center pt-4 tracking-widest">
+						Sus credenciales de acceso son incorrectas
+					</h2>
+					<button
+						on:click={() => (isOpen = false)}
+						class="py-2 px-4 font-mono font-bold uppercase tracking-widest bg-green-500 text-white mt-5 rounded shadow w-full hover:bg-green-500/70"
+					>
+						aceptar
+					</button>
+				{/if}
+				{#if isLoading}
+					<h1
+						class="text-center uppercase text-2xl font-mono font-extrabold tracking-widest text-black"
+					>
+						cargando
+					</h1>
+					<div class="text-center flex justify-center mt-6">
+						<svg
+							class="animate-spin  h-10 w-10 text-center text-green-500"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<circle
+								class="opacity-25"
+								cx="12"
+								cy="12"
+								r="10"
+								stroke="currentColor"
+								stroke-width="4"
+							/>
+							<path
+								class="opacity-75"
+								fill="currentColor"
+								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+							/>
+						</svg>
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/if}
 <App grid class="place-content-center">
 	<div class="outline outline-1 outline-gray-300 shadow-md p-8 rounded bg-white w-96">
 		<h1 class="pb-5 font-mono font-extrabold text-center uppercase tracking-widest text-2xl">
@@ -17,6 +114,7 @@
 			<div class="relative group">
 				<input
 					type="email"
+					bind:value={user.email}
 					placeholder="Correo"
 					class="outline outline-1 peer outline-gray-200 p-5 pl-10 border w-full h-10 bg-white shadow rounded-md font-mono focus:outline-gray-400"
 				/>
@@ -26,6 +124,7 @@
 			</div>
 			<div class="relative">
 				<input
+					bind:value={user.password}
 					type="password"
 					placeholder="Contraseña"
 					class="outline outline-1 peer outline-gray-200 p-5 pl-10 border w-full h-10 bg-white shadow rounded-md font-mono focus:outline-gray-400"
@@ -40,6 +139,8 @@
 			>
 		</form>
 	</div>
+
+	<!-- Background SVG -->
 	<i class="fixed -z-50 bottom-0 w-full">
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"
 			><path
